@@ -67,6 +67,24 @@ const formatTime = (timeStr) => {
   }
   return timeStr.substring(0, 5)
 }
+
+const calculateDuration = (depTimeStr, arrTimeStr) => {
+  if (!depTimeStr || !arrTimeStr) return ''
+  try {
+    const dep = new Date(depTimeStr.includes(' ') ? depTimeStr : `1970-01-01 ${depTimeStr}`)
+    const arr = new Date(arrTimeStr.includes(' ') ? arrTimeStr : `1970-01-01 ${arrTimeStr}`)
+    let diffMs = arr - dep
+    if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000
+
+    const totalMins = Math.floor(diffMs / 60000)
+    const hours = Math.floor(totalMins / 60)
+    const mins = totalMins % 60
+
+    return `${hours}h ${mins}m`
+  } catch (e) {
+    return ''
+  }
+}
 </script>
 
 <template>
@@ -127,11 +145,18 @@ const formatTime = (timeStr) => {
             <div class="flex items-center gap-8">
               <div>
                 <span class="text-2xl font-black text-slate-900 tracking-tight block leading-none">{{ formatTime(flight.departure_time) }}</span>
-                <span class="text-xs text-slate-500 font-medium mt-1 inline-block">{{ flight.departure_airport?.city || flight.origin_code }}</span>
+                <span class="text-xs font-bold text-slate-700 mt-1 block">
+                  {{ flight.departure_airport?.code || flight.origin_code || '' }}
+                </span>
+                <span class="text-[11px] text-slate-500 font-medium block">
+                  {{ flight.departure_airport?.name || flight.departure_airport?.city || '' }}
+                </span>
               </div>
 
               <div class="flex flex-col items-center text-slate-300 px-2">
-                <span class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Direct</span>
+                <span class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">
+                  {{ calculateDuration(flight.departure_time, flight.arrival_time) || 'Direct' }}
+                </span>
                 <div class="w-24 h-[2px] bg-slate-200 relative flex items-center justify-center">
                   <div class="absolute w-1.5 h-1.5 rounded-full bg-slate-300 left-0"></div>
                   <svg class="w-3.5 h-3.5 text-teal-600 rotate-90 z-10 bg-white px-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
@@ -141,7 +166,12 @@ const formatTime = (timeStr) => {
 
               <div>
                 <span class="text-2xl font-black text-slate-900 tracking-tight block leading-none">{{ formatTime(flight.arrival_time) }}</span>
-                <span class="text-xs text-slate-500 font-medium mt-1 inline-block">{{ flight.arrival_airport?.city || flight.destination_code }}</span>
+                <span class="text-xs font-bold text-slate-700 mt-1 block">
+                  {{ flight.arrival_airport?.code || flight.destination_code || '' }}
+                </span>
+                <span class="text-[11px] text-slate-500 font-medium block">
+                  {{ flight.arrival_airport?.name || flight.arrival_airport?.city || '' }}
+                </span>
               </div>
             </div>
           </div>
